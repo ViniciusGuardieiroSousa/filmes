@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MyFilms</string>
+    <string name="nome_principal">Meus Filmes</string>
+    <string name="botao_cadastro">Cadastrar</string>
+    <string name="botao_assisistido">Filmes Assistidos</string>
+    <string name="botao_paraassistir">Filmes para assistir</string>
+    <string name="botao_buscar">Buscar</string>
+    <string name="botao_voltar">Voltar</string>
+    <string name="cadastro">Cadastro</string>
+    <string name="busca">Busca</string>
+
+</resources>
