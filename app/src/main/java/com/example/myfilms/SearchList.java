@@ -7,7 +7,8 @@ import java.util.List;
 public class SearchList {
     @SerializedName("Search")
     public List<Search> filmes;
-    public int size(){
-        return filmes.size();
+
+    public List<Search> getFilmes() {
+        return filmes;
     }
 }
