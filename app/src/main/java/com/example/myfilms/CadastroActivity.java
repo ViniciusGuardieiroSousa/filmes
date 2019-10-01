@@ -4,42 +4,40 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.nfc.Tag;
+
 import android.os.Bundle;
-import android.os.Environment;
+
+import android.util.Base64;
 import android.util.Log;
-import android.view.MotionEvent;
+
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
+
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+
 import java.util.ArrayList;
-import java.util.List;
+
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -65,6 +63,7 @@ public class CadastroActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro);
+
         context = getApplicationContext();
         //recuperar ids
         botaoBusca = findViewById(R.id.botaoBuscaId);
@@ -75,6 +74,7 @@ public class CadastroActivity extends AppCompatActivity {
         //configurar banco de dados
         configurarBanco();
         recuperarFilmes();
+
 
         //configurar recyclerview
         configurarRecycle();
@@ -89,8 +89,10 @@ public class CadastroActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     String textoDigitado = editTextBusca.getText().toString();
+                    ((InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
+                            botaoBusca.getWindowToken(), 0);
                     if (textoDigitado == null)
-                        Toast.makeText(getApplicationContext(), "Texto não pode ser vazio", Toast.LENGTH_LONG);
+                        Toast.makeText(getApplicationContext(), "Texto não pode ser vazio", Toast.LENGTH_LONG).show();
                     else {
                         textoDigitado = tratarEspaco(textoDigitado);
                         configurarRetrofit(textoDigitado);
@@ -134,18 +136,25 @@ public class CadastroActivity extends AppCompatActivity {
                     Log.e(TAG, "erro: " + response.code());
                 } else {
                     filme = response.body();
-                    int cnt = 100;
+                    int cnt = 0;
                     if (filme.filmes != null) {
                         for (Search c : filme.filmes) {
                             if (filmesExistentes.size() == 0 || !filmesExistentes.contains(c)) {
-
                                 //baixarImagem
                                 configurarImagem(c);
                                 String nome = tratarEspaco(c.getTitle());
-                                addBanco(c);
-
+                                cnt++;
                             }
                         }
+                        if(cnt == 0)
+                            Toast.makeText(getApplicationContext(),"Filme já existente", Toast.LENGTH_LONG).show();
+                        else if(cnt == 1)
+                            Toast.makeText(getApplicationContext(),"Filme cadastrado", Toast.LENGTH_LONG).show();
+                        else
+                            Toast.makeText(getApplicationContext(),"Filmes cadastrados", Toast.LENGTH_LONG).show();
+                    }
+                    else{
+                        Toast.makeText(getApplicationContext(),"Filme não encontrado", Toast.LENGTH_LONG).show();
                     }
 
                 }
@@ -174,7 +183,9 @@ public class CadastroActivity extends AppCompatActivity {
                 Intent intent = new Intent(CadastroActivity.this,DescricaoActivity.class);
                 intent.putExtra("titulo",filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getTitle());
                 intent.putExtra("ano",filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getYear());
-                intent.putExtra("imagem",filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getPoster());
+                intent.putExtra("imagem",filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getImage());
+                intent.putExtra("tipo",filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getType());
+
                 startActivity(intent);
 
             }
@@ -190,8 +201,7 @@ public class CadastroActivity extends AppCompatActivity {
         try {
 
             banco = this.openOrCreateDatabase("filmes", MODE_PRIVATE, null);
-
-            banco.execSQL("CREATE TABLE IF NOT EXISTS filme(id INTEGER  PRIMARY KEY AUTOINCREMENT ,title VARCHAR, year VARCHAR, imdbID VARCHAR, type VARCHAR)");
+            banco.execSQL("CREATE TABLE IF NOT EXISTS 'filme'('id' INTEGER  PRIMARY KEY AUTOINCREMENT ,'title' VARCHAR, 'year' VARCHAR, 'imdbID' VARCHAR, 'type' VARCHAR, 'poster' VARCHAR )");
 
 
 
@@ -214,8 +224,12 @@ public class CadastroActivity extends AppCompatActivity {
     private void addBanco(Search c) {
         try {
             configuraApostrofo(c);
-            banco.execSQL("INSERT INTO filme(title, year, imdbID, type) VALUES('" + c.getTitle() + "','" + c.getYear() + "','" + c.getImdbID() + "','" + c.getType() + "')");
-            adaptador.updateList(c);
+            String a = Base64.encodeToString(c.getImage(),Base64.DEFAULT);
+            banco.execSQL("INSERT INTO filme(title, year, imdbID, type,poster) VALUES('" + c.getTitle() + "','" + c.getYear() + "','" + c.getImdbID() + "','" + c.getType() + "','"+a+"')");
+
+
+
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -235,19 +249,22 @@ public class CadastroActivity extends AppCompatActivity {
             int indiceColunaYear = cursor.getColumnIndex("year");
             int indiceColunaImdbID = cursor.getColumnIndex("imdbID");
             int indiceColunaType = cursor.getColumnIndex("type");
+            int indiceColunaImagem = cursor.getColumnIndex("poster");
 
 
             cursor.moveToFirst();
             while (cursor != null) {
                 Search c = new Search();
-                System.out.println(c.getTitle());
+
                 c.setTitle(cursor.getString(indiceColunaTitle));
                 c.setYear(cursor.getString(indiceColunaYear));
                 c.setImdbID(cursor.getString(indiceColunaImdbID));
                 c.setType(cursor.getString(indiceColunaType));
 
+                String aux = cursor.getString(indiceColunaImagem);
+                byte[] resultado = Base64.decode(aux,Base64.DEFAULT);
+                c.setImage(resultado);
                 filmesExistentes.add(c);
-
                 cursor.moveToNext();
             }
         } catch (Exception e) {
@@ -260,46 +277,26 @@ public class CadastroActivity extends AppCompatActivity {
     //configurar imagens
 
     private void configurarImagem(final Search c){
-        final String nome = tratarEspaco(c.getTitle());
+
         Glide.with(context).asBitmap().load(c.getPoster())
                 .into(new SimpleTarget<Bitmap>(100,100) {
                     @Override
                     public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        String a = saveImage(nome,resource);
-                        //System.out.println(a);
-                        c.setPoster(a);
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        resource.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        byte[] imagemArrayByte = stream.toByteArray();
+
+
+                        c.setImage(imagemArrayByte);
+
+
+                        adaptador.updateList(c);
+                        addBanco(c);
+
+
                     }
                 });
     }
-    private String saveImage(String nome,Bitmap image) {
-        String savedImagePath = null;
-
-        String imageFileName = "JPEG_" + nome + ".jpg";
-        File storageDir = new File(            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                + "/assets");
-        boolean success = true;
-        if (!storageDir.exists()) {
-            success = storageDir.mkdirs();
-        }
-        if (success) {
-
-            File imageFile = new File(storageDir, imageFileName);
-            savedImagePath = imageFile.getAbsolutePath();
-            try {
-                OutputStream fOut = new FileOutputStream(imageFile);
-                image.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
-                fOut.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-            Toast.makeText(context, "IMAGE SAVED", Toast.LENGTH_LONG).show();
-        }
-
-        return savedImagePath;
-    }
-
 
 
 

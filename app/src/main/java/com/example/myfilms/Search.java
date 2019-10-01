@@ -1,11 +1,22 @@
 package com.example.myfilms;
 
+import android.graphics.Bitmap;
+
 public class Search {
     private String Title;
     private String Year;
     private String imdbID;
     private String Type;
     private String Poster;
+    private byte[] image;
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
 
     public Search(){}
 
@@ -45,5 +56,13 @@ public class Search {
 
     public void setPoster(String poster) {
         Poster = poster;
+    }
+    @Override
+    public boolean equals(Object obj){
+        if(!(obj instanceof Search)){
+            return false;
+        }
+        final Search other = (Search) obj;
+        return this.getTitle().equals(other.getTitle());
     }
 }

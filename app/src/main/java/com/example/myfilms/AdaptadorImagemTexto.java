@@ -2,6 +2,8 @@ package com.example.myfilms;
 
 import android.content.Context;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +49,8 @@ class AdaptadorImagemTexto extends RecyclerView.Adapter<ListaHolder>implements V
     public void onBindViewHolder(@NonNull ListaHolder holder, int position) {
 
         holder.titulo.setText(mDataset.get(position).getTitle());
-        //holder.poster.getResources().getDrawable(mDataset.get(position).getImagem());
+        Bitmap exibir = BitmapFactory.decodeByteArray(mDataset.get(position).getImage(), 0, mDataset.get(position).getImage().length);
+        holder.poster.setImageBitmap(exibir);
     }
 
     //metodo usado para retornar o numero de elementos na lista
