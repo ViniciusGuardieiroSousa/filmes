@@ -34,6 +34,7 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -57,13 +58,14 @@ public class CadastroActivity extends AppCompatActivity {
     private ImageView imagemView;
     private SQLiteDatabase banco;
     private ArrayList<Search> filmesExistentes = new ArrayList<>(0);
-
+    private Context context ;
     private AdaptadorImagemTexto adaptador;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro);
+        context = getApplicationContext();
         //recuperar ids
         botaoBusca = findViewById(R.id.botaoBuscaId);
         editTextBusca = findViewById(R.id.editTextBuscaID);
@@ -138,6 +140,7 @@ public class CadastroActivity extends AppCompatActivity {
                             if (filmesExistentes.size() == 0 || !filmesExistentes.contains(c)) {
 
                                 //baixarImagem
+                                configurarImagem(c);
                                 String nome = tratarEspaco(c.getTitle());
                                 addBanco(c);
 
@@ -170,6 +173,8 @@ public class CadastroActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(CadastroActivity.this,DescricaoActivity.class);
                 intent.putExtra("titulo",filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getTitle());
+                intent.putExtra("ano",filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getYear());
+                intent.putExtra("imagem",filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getPoster());
                 startActivity(intent);
 
             }
@@ -253,31 +258,31 @@ public class CadastroActivity extends AppCompatActivity {
 
 
     //configurar imagens
-    private void usarGlide(final String url, final String nome) {
-        Glide.with(this).asBitmap().load(url).into(new CustomTarget<Bitmap>() {
-            @Override
-            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                saveImage(resource, nome);
-            }
 
-            @Override
-            public void onLoadCleared(@Nullable Drawable placeholder) {
-            }
-        });
-
+    private void configurarImagem(final Search c){
+        final String nome = tratarEspaco(c.getTitle());
+        Glide.with(context).asBitmap().load(c.getPoster())
+                .into(new SimpleTarget<Bitmap>(100,100) {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        String a = saveImage(nome,resource);
+                        //System.out.println(a);
+                        c.setPoster(a);
+                    }
+                });
     }
-
-    private String saveImage(Bitmap image, String nome) {
+    private String saveImage(String nome,Bitmap image) {
         String savedImagePath = null;
 
-        String imageFileName = nome + ".jpg";
-        File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                + "/drawble");
+        String imageFileName = "JPEG_" + nome + ".jpg";
+        File storageDir = new File(            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                + "/assets");
         boolean success = true;
         if (!storageDir.exists()) {
             success = storageDir.mkdirs();
         }
         if (success) {
+
             File imageFile = new File(storageDir, imageFileName);
             savedImagePath = imageFile.getAbsolutePath();
             try {
@@ -288,20 +293,13 @@ public class CadastroActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            // Add the image to the system gallery
-            galleryAddPic(savedImagePath);
-            Toast.makeText(getApplicationContext(), "IMAGE SAVED", Toast.LENGTH_LONG).show();
+
+            Toast.makeText(context, "IMAGE SAVED", Toast.LENGTH_LONG).show();
         }
+
         return savedImagePath;
     }
 
-    private void galleryAddPic(String imagePath) {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(imagePath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        sendBroadcast(mediaScanIntent);
-    }
 
 
 

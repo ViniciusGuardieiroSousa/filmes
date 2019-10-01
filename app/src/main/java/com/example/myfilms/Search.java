@@ -6,18 +6,8 @@ public class Search {
     private String imdbID;
     private String Type;
     private String Poster;
-    private int imagem; //contem o id da imagem
+
     public Search(){}
-
-    public void setImagem(int imagem) {
-        this.imagem = imagem;
-    }
-
-    public int getImagem() {
-        return imagem;
-    }
-
-
 
     public String getTitle() {
         return Title;

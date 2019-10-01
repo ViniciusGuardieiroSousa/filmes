@@ -10,6 +10,6 @@ import retrofit2.http.Query;
 
 public interface SearchFilmes {
 
-    @GET("?apikey=b1005863&")
+    @GET("?apikey=b1005863&type=movie&")
     Call<SearchList>getSearch(@Query("s") String filme);
 }
