@@ -1,13 +1,17 @@
 package com.example.myfilms;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 //classe java responsável por associar o layout para acessar os campos
-public class ListaHolder extends RecyclerView.ViewHolder {
+public class ListaHolder extends RecyclerView.ViewHolder  {
+
     public TextView titulo;
     public ImageView poster;
 
@@ -17,4 +21,6 @@ public class ListaHolder extends RecyclerView.ViewHolder {
         poster = (ImageView) itemView.findViewById(R.id.imagemRVId);
 
     }
+
+
 }
