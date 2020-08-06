@@ -11,23 +11,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class MovieHolder extends RecyclerView.ViewHolder {
 
-    private TextView title;
-    private ImageView poster;
+    private TextView movieTitle;
+    private ImageView moviePoster;
 
     public MovieHolder(@NonNull View itemView) {
         super(itemView);
-        title = itemView.findViewById(R.id.textItemId);
-        poster = itemView.findViewById(R.id.imageItemId);
+        movieTitle = itemView.findViewById(R.id.textItemId);
+        moviePoster = itemView.findViewById(R.id.imageItemId);
     }
 
     public void bind(Search item) {
-        title.setText(item.getTitle());
+        movieTitle.setText(item.getTitle());
         Bitmap imagePoster = BitmapFactory.decodeByteArray(
                 item.getImage(),
                 0,
                 item.getImage().length
         );
-        poster.setImageBitmap(imagePoster);
+        moviePoster.setImageBitmap(imagePoster);
     }
 
 

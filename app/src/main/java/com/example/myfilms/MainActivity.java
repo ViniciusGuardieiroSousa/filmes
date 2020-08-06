@@ -38,7 +38,10 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.example.myfilms.BundlesKeyConstants.TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.constants.BundlesKeyConstants.IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.constants.BundlesKeyConstants.TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.constants.BundlesKeyConstants.TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.constants.BundlesKeyConstants.YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "erro";
@@ -145,9 +148,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, MovieDescriptionActivity.class);
                 intent.putExtra(TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY, moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getTitle());
-                intent.putExtra("ano", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getYear());
-                intent.putExtra("imagem", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getImage());
-                intent.putExtra("tipo", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getType());
+                intent.putExtra(YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY, moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getYear());
+                intent.putExtra(IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY, moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getImage());
+                intent.putExtra(TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY, moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getType());
                 startActivity(intent);
             }
         });

@@ -8,15 +8,15 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import static com.example.myfilms.BundlesKeyConstants.IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
-import static com.example.myfilms.BundlesKeyConstants.TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
-import static com.example.myfilms.BundlesKeyConstants.TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
-import static com.example.myfilms.BundlesKeyConstants.YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.constants.BundlesKeyConstants.IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.constants.BundlesKeyConstants.TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.constants.BundlesKeyConstants.TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.constants.BundlesKeyConstants.YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 
 public class MovieDescriptionActivity extends AppCompatActivity {
     private static final int IMAGE_OFFSET = 0;
-    private TextView movieTitleTextView, movieYearTextView, movieTypeTextView;
-    private ImageView moviePosterImage;
+    private TextView movieTitle, movieYear, movieType;
+    private ImageView moviePoster;
     private Bundle extras;
 
     @Override
@@ -29,10 +29,10 @@ public class MovieDescriptionActivity extends AppCompatActivity {
     }
 
     private void findViewsById() {
-        movieTitleTextView = findViewById(R.id.movieTitleDescriptionActivityID);
-        movieYearTextView = findViewById(R.id.movieYearDescriptionActivityId);
-        moviePosterImage = findViewById(R.id.moviePosterImageDescriptionActivityId);
-        movieTypeTextView = findViewById(R.id.movieTypeDescriptionActivityId);
+        movieTitle = findViewById(R.id.movieTitleDescriptionActivityID);
+        movieYear = findViewById(R.id.movieYearDescriptionActivityId);
+        moviePoster = findViewById(R.id.moviePosterImageDescriptionActivityId);
+        movieType = findViewById(R.id.movieTypeDescriptionActivityId);
     }
 
     private void setViewBundleInformationIfExtraIsNotNull() {
@@ -46,11 +46,11 @@ public class MovieDescriptionActivity extends AppCompatActivity {
     }
 
     private void setViewBundleInformation() {
-        setTextWithBundleInformation(movieTitleTextView, TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY);
-        setTextWithBundleInformation(movieYearTextView, YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY);
-        setTextWithBundleInformation(movieTypeTextView, TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY);
+        setTextWithBundleInformation(movieTitle, TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY);
+        setTextWithBundleInformation(movieYear, YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY);
+        setTextWithBundleInformation(movieType, TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY);
         setImageWithBundleInformation(
-                moviePosterImage,
+                moviePoster,
                 IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY,
                 IMAGE_OFFSET
         );
@@ -58,9 +58,9 @@ public class MovieDescriptionActivity extends AppCompatActivity {
     }
 
     private void setTextWithBundleInformation(TextView textView, String key) {
-        String extraString = extras.getString(key);
-        if (extraString != null)
-            textView.setText(extraString);
+        String extra = extras.getString(key);
+        if (extra != null)
+            textView.setText(extra);
     }
 
     private void setImageWithBundleInformation(ImageView imageView, String key, int imageOffset) {
