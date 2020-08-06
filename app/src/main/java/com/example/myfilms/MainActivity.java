@@ -38,6 +38,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.example.myfilms.BundlesKeyConstants.TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "erro";
     private Button searchButton;
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Search> moviesExisting = new ArrayList<>(0);
     private Context context;
     private MovieAdapter movieAdapter;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, MovieDescriptionActivity.class);
-                intent.putExtra("titulo", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getTitle());
+                intent.putExtra(TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY, moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getTitle());
                 intent.putExtra("ano", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getYear());
                 intent.putExtra("imagem", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getImage());
                 intent.putExtra("tipo", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getType());
