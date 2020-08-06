@@ -40,15 +40,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "erro";
-    private Button botaoBusca;
-    private EditText editTextBusca;
-    private RecyclerView recyclerViewBusca;
-    private SearchList filme;
-    private ImageView imagemView;
-    private SQLiteDatabase banco;
-    private ArrayList<Search> filmesExistentes = new ArrayList<>(0);
+    private Button searchButton;
+    private EditText searchEditText;
+    private RecyclerView recyclerView;
+    private SearchList searchList;
+    private ImageView posterImageView;
+    private SQLiteDatabase database;
+    private ArrayList<Search> moviesExisting = new ArrayList<>(0);
     private Context context;
-    private MovieAdapter adaptador;
+    private MovieAdapter movieAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +56,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         context = getApplicationContext();
         //recuperar ids
-        botaoBusca = findViewById(R.id.botaoBuscaId);
-        editTextBusca = findViewById(R.id.editTextBuscaID);
-        recyclerViewBusca = findViewById(R.id.recyclerViewBuscaID);
-        imagemView = findViewById(R.id.imagemID);
-        filmesExistentes = new ArrayList<>(0);
+        searchButton = findViewById(R.id.botaoBuscaId);
+        searchEditText = findViewById(R.id.editTextBuscaID);
+        recyclerView = findViewById(R.id.recyclerViewBuscaID);
+        posterImageView = findViewById(R.id.imagemID);
+        moviesExisting = new ArrayList<>(0);
         //configurar banco de dados
         configurarBanco();
         recuperarFilmes();
@@ -71,12 +71,12 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 1);
         } else {
             //evento do botao
-            botaoBusca.setOnClickListener(new View.OnClickListener() {
+            searchButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String textoDigitado = editTextBusca.getText().toString();
+                    String textoDigitado = searchEditText.getText().toString();
                     ((InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
-                            botaoBusca.getWindowToken(), 0);
+                            searchButton.getWindowToken(), 0);
                     if (textoDigitado == null)
                         Toast.makeText(getApplicationContext(), "Texto não pode ser vazio", Toast.LENGTH_LONG).show();
                     else {
@@ -117,11 +117,11 @@ public class MainActivity extends AppCompatActivity {
                 if (!response.isSuccessful()) {
                     Log.e(TAG, "erro: " + response.code());
                 } else {
-                    filme = response.body();
+                    searchList = response.body();
                     int cnt = 0;
-                    if (filme.filmes != null) {
-                        for (Search c : filme.filmes) {
-                            if (filmesExistentes.size() == 0 || !filmesExistentes.contains(c)) {
+                    if (searchList.filmes != null) {
+                        for (Search c : searchList.filmes) {
+                            if (moviesExisting.size() == 0 || !moviesExisting.contains(c)) {
                                 //baixarImagem
                                 configurarImagem(c);
                                 String nome = tratarEspaco(c.getTitle());
@@ -149,29 +149,29 @@ public class MainActivity extends AppCompatActivity {
     //configurar recyclerView
     private void configurarRecycle() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerViewBusca.setLayoutManager(layoutManager);
-        adaptador = new MovieAdapter(filmesExistentes);
-        recyclerViewBusca.setAdapter(adaptador);
-        adaptador.setOnClickListener(new View.OnClickListener() {
+        recyclerView.setLayoutManager(layoutManager);
+        movieAdapter = new MovieAdapter(moviesExisting);
+        recyclerView.setAdapter(movieAdapter);
+        movieAdapter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, DescricaoActivity.class);
-                intent.putExtra("titulo", filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getTitle());
-                intent.putExtra("ano", filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getYear());
-                intent.putExtra("imagem", filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getImage());
-                intent.putExtra("tipo", filmesExistentes.get(recyclerViewBusca.getChildAdapterPosition(v)).getType());
+                intent.putExtra("titulo", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getTitle());
+                intent.putExtra("ano", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getYear());
+                intent.putExtra("imagem", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getImage());
+                intent.putExtra("tipo", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getType());
                 startActivity(intent);
             }
         });
         //criar uma linha vertical entre os itens da lista
-        recyclerViewBusca.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
 
     //metodos para manipulação do banco de dados
     private void configurarBanco() {
         try {
-            banco = this.openOrCreateDatabase("filmes", MODE_PRIVATE, null);
-            banco.execSQL("CREATE TABLE IF NOT EXISTS 'filme'('id' INTEGER  PRIMARY KEY AUTOINCREMENT ,'title' VARCHAR, 'year' VARCHAR, 'imdbID' VARCHAR, 'type' VARCHAR, 'poster' VARCHAR )");
+            database = this.openOrCreateDatabase("filmes", MODE_PRIVATE, null);
+            database.execSQL("CREATE TABLE IF NOT EXISTS 'filme'('id' INTEGER  PRIMARY KEY AUTOINCREMENT ,'title' VARCHAR, 'year' VARCHAR, 'imdbID' VARCHAR, 'type' VARCHAR, 'poster' VARCHAR )");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             configuraApostrofo(c);
             String a = Base64.encodeToString(c.getImage(), Base64.DEFAULT);
-            banco.execSQL("INSERT INTO filme(title, year, imdbID, type,poster) VALUES('" + c.getTitle() + "','" + c.getYear() + "','" + c.getImdbID() + "','" + c.getType() + "','" + a + "')");
+            database.execSQL("INSERT INTO filme(title, year, imdbID, type,poster) VALUES('" + c.getTitle() + "','" + c.getYear() + "','" + c.getImdbID() + "','" + c.getType() + "','" + a + "')");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void recuperarFilmes() {
         try {
-            Cursor cursor = banco.rawQuery("SELECT * FROM filme", null);
+            Cursor cursor = database.rawQuery("SELECT * FROM filme", null);
             //recuperar ids das colunas
             int indiceColunaTitle = cursor.getColumnIndex("title");
             int indiceColunaYear = cursor.getColumnIndex("year");
@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                 String aux = cursor.getString(indiceColunaImagem);
                 byte[] resultado = Base64.decode(aux, Base64.DEFAULT);
                 c.setImage(resultado);
-                filmesExistentes.add(c);
+                moviesExisting.add(c);
                 cursor.moveToNext();
             }
         } catch (Exception e) {
@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                         resource.compress(Bitmap.CompressFormat.PNG, 100, stream);
                         byte[] imagemArrayByte = stream.toByteArray();
                         c.setImage(imagemArrayByte);
-                        adaptador.insertItem(c);
+                        movieAdapter.insertItem(c);
                         addBanco(c);
                     }
                 });
