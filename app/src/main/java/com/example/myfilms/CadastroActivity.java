@@ -57,7 +57,7 @@ public class CadastroActivity extends AppCompatActivity {
     private SQLiteDatabase banco;
     private ArrayList<Search> filmesExistentes = new ArrayList<>(0);
     private Context context ;
-    private AdaptadorImagemTexto adaptador;
+    private MovieAdapter adaptador;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,7 +174,7 @@ public class CadastroActivity extends AppCompatActivity {
     private void configurarRecycle() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerViewBusca.setLayoutManager(layoutManager);
-        adaptador = new AdaptadorImagemTexto(filmesExistentes);
+        adaptador = new MovieAdapter(filmesExistentes);
         recyclerViewBusca.setAdapter(adaptador);
 
         adaptador.setOnClickListener(new View.OnClickListener() {
@@ -290,7 +290,7 @@ public class CadastroActivity extends AppCompatActivity {
                         c.setImage(imagemArrayByte);
 
 
-                        adaptador.updateList(c);
+                        adaptador.insertItem(c);
                         addBanco(c);
 
 
