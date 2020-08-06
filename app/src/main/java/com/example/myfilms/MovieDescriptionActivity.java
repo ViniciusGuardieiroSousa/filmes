@@ -8,29 +8,25 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class DescricaoActivity extends AppCompatActivity {
-    private TextView titulo,ano,tipo;
+public class MovieDescriptionActivity extends AppCompatActivity {
+    private TextView title, year, type;
     private ImageView poster;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_descricao);
-
-        titulo = findViewById(R.id.tituloID);
-        ano = findViewById(R.id.anoID);
+        setContentView(R.layout.activity_movie_description);
+        title = findViewById(R.id.tituloID);
+        year = findViewById(R.id.anoID);
         poster = findViewById(R.id.imagemExibirId);
-        tipo = findViewById(R.id.tipoID);
-
+        type = findViewById(R.id.tipoID);
         Bundle a = getIntent().getExtras();
         if(a!=null){
-            titulo.setText(a.getString("titulo"));
-            ano.setText(a.getString("ano"));
+            title.setText(a.getString("titulo"));
+            year.setText(a.getString("ano"));
             byte[] aux = a.getByteArray("imagem");
-            tipo.setText(a.getString("tipo"));
+            type.setText(a.getString("tipo"));
             Bitmap exibir = BitmapFactory.decodeByteArray(aux, 0, aux.length);
             poster.setImageBitmap(exibir);
         }
-
-
     }
 }

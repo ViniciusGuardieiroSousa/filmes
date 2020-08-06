@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         movieAdapter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, DescricaoActivity.class);
+                Intent intent = new Intent(MainActivity.this, MovieDescriptionActivity.class);
                 intent.putExtra("titulo", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getTitle());
                 intent.putExtra("ano", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getYear());
                 intent.putExtra("imagem", moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getImage());
