@@ -55,22 +55,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = getApplicationContext();
-        //recuperar ids
         searchButton = findViewById(R.id.botaoBuscaId);
         searchEditText = findViewById(R.id.editTextBuscaID);
         recyclerView = findViewById(R.id.recyclerViewBuscaID);
         posterImageView = findViewById(R.id.imagemID);
         moviesExisting = new ArrayList<>(0);
-        //configurar banco de dados
-        configurarBanco();
-        recuperarFilmes();
-        //configurar recyclerview
-        configurarRecycle();
-        //verificar permissão de uso internet
+        configDatabase();
+        getMoviesOnDatabase();
+        configRecycle();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 1);
         } else {
-            //evento do botao
             searchButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -80,16 +75,15 @@ public class MainActivity extends AppCompatActivity {
                     if (textoDigitado == null)
                         Toast.makeText(getApplicationContext(), "Texto não pode ser vazio", Toast.LENGTH_LONG).show();
                     else {
-                        textoDigitado = tratarEspaco(textoDigitado);
-                        configurarRetrofit(textoDigitado);
+                        textoDigitado = treatBlankSpaceOnSearchText(textoDigitado);
+                        configRetrofit(textoDigitado);
                     }
                 }
             });
         }
     }
 
-    //troca os espaços digitado pelo usuario por + para poder usar na url
-    private String tratarEspaco(String texto) {
+    private String treatBlankSpaceOnSearchText(String texto) {
         String retorno = "";
         for (int i = 0; i < texto.length(); i++) {
             if (texto.charAt(i) == ' ') {
@@ -101,19 +95,13 @@ public class MainActivity extends AppCompatActivity {
         return retorno;
     }
 
-    //metodo que configura o Retrofit e adiciona novos itens no recycleView
-    private void configurarRetrofit(String textoDigitado) {
-        //criar o retrofit
+    private void configRetrofit(String textoDigitado) {
         Retrofit retrofit = new Retrofit.Builder().baseUrl("http://www.omdbapi.com/").addConverterFactory(GsonConverterFactory.create()).build();
-        //retorna uma classe que implementa a interface SearchFilms por meio do polimorfismo
         final SearchFilmes filmes = retrofit.create(SearchFilmes.class);
         Call<SearchList> filmesBuscado = filmes.getSearch(textoDigitado);
-        //executar de forma assincrona pois está dentro da ui thread pois ela n pode esperar a requisição pois uma requisação a internet pode ser lenta e irá travar (sincrona se tivesse dentro de uma classe ou thread)
-        //calback classe anonima para ver o retorno de erro ou sucesso e proceder de forma certa
         filmesBuscado.enqueue(new Callback<SearchList>() {
             @Override
             public void onResponse(Call<SearchList> call, Response<SearchList> response) {
-                //conector ao servidor porem a requisição não retornou algo desejado
                 if (!response.isSuccessful()) {
                     Log.e(TAG, "erro: " + response.code());
                 } else {
@@ -122,9 +110,8 @@ public class MainActivity extends AppCompatActivity {
                     if (searchList.filmes != null) {
                         for (Search c : searchList.filmes) {
                             if (moviesExisting.size() == 0 || !moviesExisting.contains(c)) {
-                                //baixarImagem
-                                configurarImagem(c);
-                                String nome = tratarEspaco(c.getTitle());
+                                configImage(c);
+                                String nome = treatBlankSpaceOnSearchText(c.getTitle());
                                 cnt++;
                             }
                         }
@@ -146,8 +133,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //configurar recyclerView
-    private void configurarRecycle() {
+    private void configRecycle() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         movieAdapter = new MovieAdapter(moviesExisting);
@@ -163,12 +149,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        //criar uma linha vertical entre os itens da lista
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
 
-    //metodos para manipulação do banco de dados
-    private void configurarBanco() {
+    private void configDatabase() {
         try {
             database = this.openOrCreateDatabase("filmes", MODE_PRIVATE, null);
             database.execSQL("CREATE TABLE IF NOT EXISTS 'filme'('id' INTEGER  PRIMARY KEY AUTOINCREMENT ,'title' VARCHAR, 'year' VARCHAR, 'imdbID' VARCHAR, 'type' VARCHAR, 'poster' VARCHAR )");
@@ -177,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void configuraApostrofo(Search c) {
+    void configApostrophe(Search c) {
         String a = "";
         char b = '\'';
         for (int i = 0; i < c.getTitle().length(); i++) {
@@ -189,9 +173,9 @@ public class MainActivity extends AppCompatActivity {
         c.setTitle(a);
     }
 
-    private void addBanco(Search c) {
+    private void addMovieOnDatabase(Search c) {
         try {
-            configuraApostrofo(c);
+            configApostrophe(c);
             String a = Base64.encodeToString(c.getImage(), Base64.DEFAULT);
             database.execSQL("INSERT INTO filme(title, year, imdbID, type,poster) VALUES('" + c.getTitle() + "','" + c.getYear() + "','" + c.getImdbID() + "','" + c.getType() + "','" + a + "')");
         } catch (Exception e) {
@@ -200,10 +184,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void recuperarFilmes() {
+    private void getMoviesOnDatabase() {
         try {
             Cursor cursor = database.rawQuery("SELECT * FROM filme", null);
-            //recuperar ids das colunas
             int indiceColunaTitle = cursor.getColumnIndex("title");
             int indiceColunaYear = cursor.getColumnIndex("year");
             int indiceColunaImdbID = cursor.getColumnIndex("imdbID");
@@ -227,8 +210,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //configurar imagens
-    private void configurarImagem(final Search c) {
+    private void configImage(final Search c) {
         Glide.with(context).asBitmap().load(c.getPoster())
                 .into(new SimpleTarget<Bitmap>(100, 100) {
                     @Override
@@ -238,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                         byte[] imagemArrayByte = stream.toByteArray();
                         c.setImage(imagemArrayByte);
                         movieAdapter.insertItem(c);
-                        addBanco(c);
+                        addMovieOnDatabase(c);
                     }
                 });
     }
