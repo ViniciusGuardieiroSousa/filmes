@@ -80,7 +80,10 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
         return columnIndexes;
     }
 
-    private Search getMovieFromCursor(Cursor cursor, Map<String, Integer> columnIndexes) throws DatabaseException {
+    private Search getMovieFromCursor(
+            Cursor cursor,
+            Map<String, Integer> columnIndexes
+    ) throws DatabaseException {
         try{
             Search movie = new Search();
             movie.setTitle(cursor.getString(columnIndexes.get(COLUMN_TITLE)));
