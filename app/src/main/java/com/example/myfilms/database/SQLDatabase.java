@@ -13,10 +13,10 @@ public abstract class SQLDatabase {
     }
 
     public void createTable(String tableCommand) throws SQLException {
-        execCommand(tableCommand);
+        executeCommand(tableCommand);
     }
 
-    private void execCommand(String sqlCommand) throws SQLException {
+    protected void executeCommand(String sqlCommand) throws SQLException {
         database.execSQL(sqlCommand);
     }
 

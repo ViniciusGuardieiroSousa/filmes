@@ -29,10 +29,7 @@
                 android:text="@string/cadastro"
                 android:textColor="@color/preto"
                 android:textSize="40sp" />
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/imagemID"/>
+
             <EditText
                 android:id="@+id/editTextBuscaID"
                 android:layout_width="314dp"

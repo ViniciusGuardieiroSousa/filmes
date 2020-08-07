@@ -5,10 +5,10 @@ import android.content.Context;
 import com.example.myfilms.exceptions.DatabaseException;
 
 
-public final class DataBaseFactory {
+public final class DatabaseFactory {
     private static MovieSQLDatabase movieSQLDatabase;
 
-    public static Database getMovieDataBase(
+    public static MovieDatabase getMovieDataBase(
             Context context,
             String name,
             int TableMode

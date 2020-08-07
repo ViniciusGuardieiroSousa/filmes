@@ -28,9 +28,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.example.myfilms.database.DatabaseFactory;
+import com.example.myfilms.database.MovieDatabase;
+import com.example.myfilms.exceptions.DatabaseException;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,11 +53,10 @@ public class MainActivity extends AppCompatActivity {
     private EditText searchEditText;
     private RecyclerView recyclerView;
     private SearchList searchList;
-    private ImageView posterImageView;
-    private SQLiteDatabase database;
     private ArrayList<Search> moviesExisting = new ArrayList<>(0);
     private Context context;
     private MovieAdapter movieAdapter;
+    private MovieDatabase database;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +66,8 @@ public class MainActivity extends AppCompatActivity {
         searchButton = findViewById(R.id.botaoBuscaId);
         searchEditText = findViewById(R.id.editTextBuscaID);
         recyclerView = findViewById(R.id.recyclerViewBuscaID);
-        posterImageView = findViewById(R.id.imagemID);
         moviesExisting = new ArrayList<>(0);
-        configDatabase();
-        getMoviesOnDatabase();
+        configDatabaseAndGetMoviesSaved();
         configRecycle();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 1);
@@ -85,6 +86,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+        }
+    }
+
+    private void configDatabaseAndGetMoviesSaved() {
+        try {
+            database = DatabaseFactory.getMovieDataBase(this, "Movies", MODE_PRIVATE);
+            moviesExisting = database.getMovies();
+        }catch (DatabaseException exception){
+            Log.e("DatabaseError", exception.getMessage());
         }
     }
 
@@ -157,64 +167,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
 
-    private void configDatabase() {
-        try {
-            database = this.openOrCreateDatabase("filmes", MODE_PRIVATE, null);
-            database.execSQL("CREATE TABLE IF NOT EXISTS 'filme'('id' INTEGER  PRIMARY KEY AUTOINCREMENT ,'title' VARCHAR, 'year' VARCHAR, 'imdbID' VARCHAR, 'type' VARCHAR, 'poster' VARCHAR )");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    void configApostrophe(Search c) {
-        String a = "";
-        char b = '\'';
-        for (int i = 0; i < c.getTitle().length(); i++) {
-            if (c.getTitle().charAt(i) == b) {
-                a += "\'";
-            }
-            a += c.getTitle().charAt(i);
-        }
-        c.setTitle(a);
-    }
-
-    private void addMovieOnDatabase(Search c) {
-        try {
-            configApostrophe(c);
-            String a = Base64.encodeToString(c.getImage(), Base64.DEFAULT);
-            database.execSQL("INSERT INTO filme(title, year, imdbID, type,poster) VALUES('" + c.getTitle() + "','" + c.getYear() + "','" + c.getImdbID() + "','" + c.getType() + "','" + a + "')");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private void getMoviesOnDatabase() {
-        try {
-            Cursor cursor = database.rawQuery("SELECT * FROM filme", null);
-            int indiceColunaTitle = cursor.getColumnIndex("title");
-            int indiceColunaYear = cursor.getColumnIndex("year");
-            int indiceColunaImdbID = cursor.getColumnIndex("imdbID");
-            int indiceColunaType = cursor.getColumnIndex("type");
-            int indiceColunaImagem = cursor.getColumnIndex("poster");
-            cursor.moveToFirst();
-            while (cursor != null) {
-                Search c = new Search();
-                c.setTitle(cursor.getString(indiceColunaTitle));
-                c.setYear(cursor.getString(indiceColunaYear));
-                c.setImdbID(cursor.getString(indiceColunaImdbID));
-                c.setType(cursor.getString(indiceColunaType));
-                String aux = cursor.getString(indiceColunaImagem);
-                byte[] resultado = Base64.decode(aux, Base64.DEFAULT);
-                c.setImage(resultado);
-                moviesExisting.add(c);
-                cursor.moveToNext();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private void configImage(final Search c) {
         Glide.with(context).asBitmap().load(c.getPoster())
                 .into(new SimpleTarget<Bitmap>(100, 100) {
@@ -225,7 +177,11 @@ public class MainActivity extends AppCompatActivity {
                         byte[] imagemArrayByte = stream.toByteArray();
                         c.setImage(imagemArrayByte);
                         movieAdapter.insertItem(c);
-                        addMovieOnDatabase(c);
+                        try {
+                            database.insertMovie(c);
+                        }catch (DatabaseException exception){
+                            Log.e("DatabaseError", "Error to add a movie on a database");
+                        }
                     }
                 });
     }
