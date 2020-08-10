@@ -1,4 +1,6 @@
-package com.example.myfilms;
+package com.example.myfilms.retrofit;
+
+import com.example.myfilms.SearchList;
 
 import java.util.List;
 
