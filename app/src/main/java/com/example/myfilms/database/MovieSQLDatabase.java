@@ -34,7 +34,7 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
 
     private static String GET_MOVIES_ON_TABLE = "SELECT * FROM " + TABLE_NAME;
 
-    public MovieSQLDatabase(
+    MovieSQLDatabase(
             Context context,
             String sqlName,
             int tableMode
@@ -58,16 +58,41 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
         }
     }
 
-    private ArrayList<Search> getMoviesFromCursor(Cursor cursor) throws DatabaseException {
-        Map<String, Integer> columnIndexes = getColumnIndexes(cursor);
+    private ArrayList<Search> getMoviesFromCursor(Cursor cursor) throws DatabaseException,
+            NullPointerException {
         cursor.moveToFirst();
         ArrayList<Search> moviesSaved = new ArrayList<>();
-        while (cursor != null) {
-            Search movie = getMovieFromCursor(cursor, columnIndexes);
+        int rowsCount = 0;
+        while (haveMoreLinesOnDatabase(cursor, rowsCount)) {
+            Search movie = getMovieFromCursor(cursor);
             moviesSaved.add(movie);
             cursor.moveToNext();
+            rowsCount++;
         }
         return moviesSaved;
+    }
+
+    private boolean haveMoreLinesOnDatabase(Cursor cursor, int numberOfRows) {
+        return cursor != null && numberOfRows > cursor.getCount();
+    }
+
+    private Search getMovieFromCursor(
+            Cursor cursor
+    ) throws DatabaseException, NullPointerException {
+        try {
+            Map<String, Integer> columnIndexes = getColumnIndexes(cursor);
+            Search movie = new Search();
+            movie.setTitle(cursor.getString(columnIndexes.get(COLUMN_TITLE)));
+            movie.setYear(cursor.getString(columnIndexes.get(COLUMN_YEAR)));
+            movie.setImdbID(cursor.getString(columnIndexes.get(COLUMN_IMDB_ID)));
+            movie.setType(cursor.getString(columnIndexes.get(COLUMN_TYPE)));
+            String poster = cursor.getString(columnIndexes.get(COLUMN_POSTER));
+            byte[] posterDecoded = Base64.decode(poster, Base64.DEFAULT);
+            movie.setImage(posterDecoded);
+            return movie;
+        } catch (Exception exception) {
+            throw new DatabaseException(exception.getMessage());
+        }
     }
 
     private Map<String, Integer> getColumnIndexes(Cursor cursor) {
@@ -80,25 +105,7 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
         return columnIndexes;
     }
 
-    private Search getMovieFromCursor(
-            Cursor cursor,
-            Map<String, Integer> columnIndexes
-    ) throws DatabaseException {
-        try{
-            Search movie = new Search();
-            movie.setTitle(cursor.getString(columnIndexes.get(COLUMN_TITLE)));
-            movie.setYear(cursor.getString(columnIndexes.get(COLUMN_YEAR)));
-            movie.setImdbID(cursor.getString(columnIndexes.get(COLUMN_IMDB_ID)));
-            movie.setType(cursor.getString(columnIndexes.get(COLUMN_TYPE)));
-            String poster = cursor.getString(columnIndexes.get(COLUMN_POSTER));
-            byte[] posterDecoded = Base64.decode(poster, Base64.DEFAULT);
-            movie.setImage(posterDecoded);
-            return movie;
-        }catch(Exception exception){
-            throw new DatabaseException(exception.getMessage());
-        }
-    }
-
+    //movie is not inserted
     @Override
     public void insertMovie(Search movie) throws DatabaseException {
         try {
@@ -115,7 +122,7 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
         }
     }
 
-    public String getInsertCommand(Search movie) {
+    private String getInsertCommand(Search movie) {
         String titleNormalized = threatApostrophe(movie.getTitle());
         String encodeImage = Base64.encodeToString(movie.getImage(), Base64.DEFAULT);
         return "INSERT INTO " + TABLE_NAME + "("

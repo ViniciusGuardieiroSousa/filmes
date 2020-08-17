@@ -18,7 +18,7 @@ public class MovieDescriptionActivity extends AppCompatActivity {
     private TextView movieTitle, movieYear, movieType;
     private ImageView moviePoster;
     private Bundle extras;
-
+    //image is not displaying
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +70,6 @@ public class MovieDescriptionActivity extends AppCompatActivity {
                     .decodeByteArray(imageByteArray, imageOffset, imageByteArray.length);
             imageView.setImageBitmap(imageDecoded);
         }
-
     }
 
 
