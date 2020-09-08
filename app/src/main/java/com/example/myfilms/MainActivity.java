@@ -122,28 +122,34 @@ public class MainActivity extends AppCompatActivity {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(
-                        MainActivity.this, MovieDescriptionActivity.class
-                );
-                intent.putExtra(
-                        TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY,
-                        moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getTitle()
-                );
-                intent.putExtra(
-                        YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY,
-                        moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getYear()
-                );
-                intent.putExtra(
-                        IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY,
-                        moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getImage()
-                );
-                intent.putExtra(
-                        TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY,
-                        moviesExisting.get(recyclerView.getChildAdapterPosition(v)).getType()
-                );
-                startActivity(intent);
+                Search movieCLiked = moviesExisting.get(recyclerView.getChildAdapterPosition(v));
+                Intent descriptionIntent = createDescriptionIntent(movieCLiked);
+                startActivity(descriptionIntent);
             }
         };
+    }
+
+    private Intent createDescriptionIntent(Search movie){
+        Intent intent = new Intent(
+                MainActivity.this, MovieDescriptionActivity.class
+        );
+        intent.putExtra(
+                TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY,
+                movie.getTitle()
+        );
+        intent.putExtra(
+                YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY,
+                movie.getYear()
+        );
+        intent.putExtra(
+                IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY,
+                movie.getImage()
+        );
+        intent.putExtra(
+                TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY,
+                movie.getType()
+        );
+        return intent;
     }
 
     //improve
