@@ -62,19 +62,16 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
             NullPointerException {
         cursor.moveToFirst();
         ArrayList<Search> moviesSaved = new ArrayList<>();
-        int rowsCount = 0;
-        while (haveMoreLinesOnDatabase(cursor, rowsCount)) {
-            Search movie = getMovieFromCursor(cursor);
-            moviesSaved.add(movie);
-            cursor.moveToNext();
-            rowsCount++;
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                Search movie = getMovieFromCursor(cursor);
+                moviesSaved.add(movie);
+                cursor.moveToNext();
+            }
         }
         return moviesSaved;
     }
 
-    private boolean haveMoreLinesOnDatabase(Cursor cursor, int numberOfRows) {
-        return cursor != null && numberOfRows > cursor.getCount();
-    }
 
     private Search getMovieFromCursor(
             Cursor cursor
@@ -105,7 +102,6 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
         return columnIndexes;
     }
 
-    //movie is not inserted
     @Override
     public void insertMovie(Search movie) throws DatabaseException {
         try {

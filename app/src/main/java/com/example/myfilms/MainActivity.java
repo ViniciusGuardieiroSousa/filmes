@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -43,6 +44,7 @@ import static com.example.myfilms.constants.BundlesKeyConstants.TYPE_MOVIE_DESCR
 import static com.example.myfilms.constants.BundlesKeyConstants.YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 
 public class MainActivity extends AppCompatActivity {
+
     private static final String TAG = "erro";
     private Button searchButton;
     private EditText searchEditText;
@@ -78,13 +80,13 @@ public class MainActivity extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String textoDigitado = searchEditText.getText().toString();
+                String typedText = searchEditText.getText().toString();
                 ((InputMethodManager) Objects.requireNonNull(context.getSystemService(Context.INPUT_METHOD_SERVICE))).hideSoftInputFromWindow(
                         searchButton.getWindowToken(), 0);
-                if (textoDigitado.isEmpty())
+                if (typedText.isEmpty())
                     Toast.makeText(getApplicationContext(), "Texto não pode ser vazio", Toast.LENGTH_LONG).show();
                 else {
-                    searchMovies(textoDigitado);
+                    searchMovies(typedText);
                 }
             }
         });
