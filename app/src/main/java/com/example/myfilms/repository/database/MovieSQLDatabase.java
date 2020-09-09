@@ -1,11 +1,11 @@
-package com.example.myfilms.database;
+package com.example.myfilms.repository.database;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.util.Base64;
 
-import com.example.myfilms.Search;
+import com.example.myfilms.repository.dtos.DBMovie;
 import com.example.myfilms.exceptions.DatabaseException;
 
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
     }
 
     @Override
-    public ArrayList<Search> getMovies() throws DatabaseException {
+    public ArrayList<DBMovie> getMovies() throws DatabaseException {
         try {
             Cursor cursor = database.rawQuery(GET_MOVIES_ON_TABLE, null);
             return getMoviesFromCursor(cursor);
@@ -58,13 +58,13 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
         }
     }
 
-    private ArrayList<Search> getMoviesFromCursor(Cursor cursor) throws DatabaseException,
+    private ArrayList<DBMovie> getMoviesFromCursor(Cursor cursor) throws DatabaseException,
             NullPointerException {
         cursor.moveToFirst();
-        ArrayList<Search> moviesSaved = new ArrayList<>();
+        ArrayList<DBMovie> moviesSaved = new ArrayList<>();
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast()) {
-                Search movie = getMovieFromCursor(cursor);
+                DBMovie movie = getMovieFromCursor(cursor);
                 moviesSaved.add(movie);
                 cursor.moveToNext();
             }
@@ -73,12 +73,12 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
     }
 
 
-    private Search getMovieFromCursor(
+    private DBMovie getMovieFromCursor(
             Cursor cursor
     ) throws DatabaseException, NullPointerException {
         try {
             Map<String, Integer> columnIndexes = getColumnIndexes(cursor);
-            Search movie = new Search();
+            DBMovie movie = new DBMovie();
             movie.setTitle(cursor.getString(columnIndexes.get(COLUMN_TITLE)));
             movie.setYear(cursor.getString(columnIndexes.get(COLUMN_YEAR)));
             movie.setImdbID(cursor.getString(columnIndexes.get(COLUMN_IMDB_ID)));
@@ -103,7 +103,7 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
     }
 
     @Override
-    public void insertMovie(Search movie) throws DatabaseException {
+    public void insertMovie(DBMovie movie) throws DatabaseException {
         try {
             executeCommand(getInsertCommand(movie));
         } catch (SQLException exception) {
@@ -112,13 +112,13 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
     }
 
     @Override
-    public void insertMovies(List<Search> movies) throws DatabaseException {
-        for (Search movie : movies) {
+    public void insertMovies(List<DBMovie> movies) throws DatabaseException {
+        for (DBMovie movie : movies) {
             insertMovie(movie);
         }
     }
 
-    private String getInsertCommand(Search movie) {
+    private String getInsertCommand(DBMovie movie) {
         String titleNormalized = threatApostrophe(movie.getTitle());
         String encodeImage = Base64.encodeToString(movie.getImage(), Base64.DEFAULT);
         return "INSERT INTO " + TABLE_NAME + "("
@@ -142,7 +142,7 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
         for (int i = 0; i < textSize; i++) {
             char character = text.charAt(i);
             if (isApostrophe(character)) {
-                result.append("\'");
+                result.append("'");
             }
             result.append(character);
         }

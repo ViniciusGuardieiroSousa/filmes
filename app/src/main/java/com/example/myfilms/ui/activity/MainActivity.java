@@ -1,11 +1,10 @@
-package com.example.myfilms;
+package com.example.myfilms.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -23,12 +22,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
-import com.example.myfilms.database.DatabaseFactory;
-import com.example.myfilms.database.MovieDatabase;
+import com.example.myfilms.R;
+import com.example.myfilms.ui.domainModel.Movie;
+import com.example.myfilms.ui.domainModel.SearchList;
+import com.example.myfilms.repository.database.DatabaseFactory;
+import com.example.myfilms.repository.database.MovieDatabase;
 import com.example.myfilms.exceptions.DatabaseException;
-import com.example.myfilms.retrofit.APIFactory;
-import com.example.myfilms.retrofit.NetworkAPI;
-import com.example.myfilms.retrofit.SearchFilmes;
+import com.example.myfilms.repository.retrofit.APIFactory;
+import com.example.myfilms.repository.retrofit.NetworkAPI;
+import com.example.myfilms.repository.retrofit.SearchFilmes;
+import com.example.myfilms.ui.recycler.MovieAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -49,8 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private Button searchButton;
     private EditText searchEditText;
     private RecyclerView recyclerView;
-    private SearchList searchList;
-    private ArrayList<Search> moviesExisting = new ArrayList<>(0);
+    private ArrayList<Movie> moviesExisting = new ArrayList<>(0);
     private Context context;
     private MovieAdapter movieAdapter;
     private MovieDatabase database;
@@ -122,14 +124,14 @@ public class MainActivity extends AppCompatActivity {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Search movieCLiked = moviesExisting.get(recyclerView.getChildAdapterPosition(v));
+                Movie movieCLiked = moviesExisting.get(recyclerView.getChildAdapterPosition(v));
                 Intent descriptionIntent = createDescriptionIntent(movieCLiked);
                 startActivity(descriptionIntent);
             }
         };
     }
 
-    private Intent createDescriptionIntent(Search movie){
+    private Intent createDescriptionIntent(Movie movie){
         Intent intent = new Intent(
                 MainActivity.this, MovieDescriptionActivity.class
         );
@@ -161,24 +163,13 @@ public class MainActivity extends AppCompatActivity {
                 if (!response.isSuccessful()) {
                     Log.e(TAG, "erro: " + response.code());
                 } else {
+                    SearchList searchList;
                     searchList = response.body();
-                    int cnt = 0;
-                    assert searchList != null;
-                    if (searchList.filmes != null) {
-                        for (Search c : searchList.filmes) {
-                            if (moviesExisting.size() == 0 || !moviesExisting.contains(c)) {
-                                downloadImage(c);
-                                cnt++;
-                            }
-                        }
-                        if (cnt == 0)
-                            Toast.makeText(getApplicationContext(), "Filme já existente", Toast.LENGTH_LONG).show();
-                        else if (cnt == 1)
-                            Toast.makeText(getApplicationContext(), "Filme cadastrado", Toast.LENGTH_LONG).show();
-                        else
-                            Toast.makeText(getApplicationContext(), "Filmes cadastrados", Toast.LENGTH_LONG).show();
+                    if (haveMovies(searchList)) {
+                        treatResponseToAddOnMoviesExisting(searchList);
+
                     } else {
-                        Toast.makeText(getApplicationContext(), "Filme não encontrado", Toast.LENGTH_LONG).show();
+                        showToastMessage("Filme não encontrado");
                     }
                 }
             }
@@ -190,8 +181,52 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //improve
-    private void downloadImage(final Search movie) {
+    private Boolean haveMovies(SearchList searchList){
+        return searchList != null && searchList.filmes != null;
+    }
+
+    private void treatResponseToAddOnMoviesExisting(SearchList searchList){
+        int numberOfMoviesAdded = addDifferentMoviesOnMoviesExisting(searchList);
+        displayMessageWhenMoviesWasAdded(numberOfMoviesAdded);
+    }
+    
+    private int addDifferentMoviesOnMoviesExisting(SearchList searchList){
+        int numberOfMoviesAdded = 0;
+        for (Movie movie : searchList.filmes) {
+            if (movieIsntOnMoviesExistingVariable(movie)) {
+                downloadImage(movie);
+                numberOfMoviesAdded++;
+            }
+        }
+        return numberOfMoviesAdded;
+    }
+    
+    private Boolean movieIsntOnMoviesExistingVariable(Movie movie){
+        return moviesExisting.size() == 0 || !moviesExisting.contains(movie);
+    }
+
+    private void displayMessageWhenMoviesWasAdded(int numberOfMoviesAdded){
+        if (noMoviesAdded(numberOfMoviesAdded))
+            showToastMessage("Filme já existente");
+        else if (oneMovieAdded(numberOfMoviesAdded))
+            showToastMessage("Filme cadastrado");
+        else
+            showToastMessage("Filmes cadastrados");
+    }
+
+    private Boolean noMoviesAdded(int numberOfMoviesAdded){
+        return numberOfMoviesAdded == 0;
+    }
+    
+    private Boolean oneMovieAdded(int numberOfMoviesAdded){
+        return numberOfMoviesAdded == 1;
+    }
+
+    private void showToastMessage(String message){
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void downloadImage(final Movie movie) {
         Glide.with(context)
                 .asBitmap()
                 .load(movie.getPoster())
@@ -217,12 +252,12 @@ public class MainActivity extends AppCompatActivity {
         return stream.toByteArray();
     }
 
-    private void configMovieOnDatabaseAndAdapter(Search movie){
+    private void configMovieOnDatabaseAndAdapter(Movie movie){
         movieAdapter.insertItem(movie);
         saveMovieOnDatabase(movie);
     }
 
-    private void saveMovieOnDatabase(Search movie){
+    private void saveMovieOnDatabase(Movie movie){
         try {
             database.insertMovie(movie);
         } catch (DatabaseException exception) {

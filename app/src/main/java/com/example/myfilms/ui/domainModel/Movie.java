@@ -1,8 +1,6 @@
-package com.example.myfilms;
+package com.example.myfilms.ui.domainModel;
 
-import android.graphics.Bitmap;
-
-public class Search {
+public class Movie {
     private String Title;
     private String Year;
     private String imdbID;
@@ -18,7 +16,7 @@ public class Search {
         this.image = image;
     }
 
-    public Search(){}
+    public Movie(){}
 
     public String getTitle() {
         return Title;
@@ -59,10 +57,10 @@ public class Search {
     }
     @Override
     public boolean equals(Object obj){
-        if(!(obj instanceof Search)){
+        if(!(obj instanceof Movie)){
             return false;
         }
-        final Search other = (Search) obj;
+        final Movie other = (Movie) obj;
         return this.getTitle().equals(other.getTitle());
     }
 }

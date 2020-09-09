@@ -1,9 +1,5 @@
 package com.example.myfilms.constants;
 
-import android.util.Base64;
-
-import com.example.myfilms.Search;
-
 public final class MovieTableConstants {
 
     public static String TABLE_NAME = "Movies";

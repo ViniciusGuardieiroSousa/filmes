@@ -1,4 +1,4 @@
-package com.example.myfilms.retrofit;
+package com.example.myfilms.repository.retrofit;
 
 public interface NetworkAPI {
 

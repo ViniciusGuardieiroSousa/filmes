@@ -1,4 +1,4 @@
-package com.example.myfilms.database;
+package com.example.myfilms.repository.database;
 
 import android.content.Context;
 import android.database.SQLException;

@@ -1,4 +1,4 @@
-package com.example.myfilms;
+package com.example.myfilms.ui.recycler;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,16 +7,19 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myfilms.R;
+import com.example.myfilms.ui.domainModel.Movie;
+
 import java.util.ArrayList;
 import java.util.List;
 
 
-class MovieAdapter extends RecyclerView.Adapter<MovieHolder> implements View.OnClickListener {
-    private final List<Search> searchList;
+public class MovieAdapter extends RecyclerView.Adapter<MovieHolder> implements View.OnClickListener {
+    private final List<Movie> movieList;
     private View.OnClickListener listener;
 
-    public MovieAdapter(ArrayList<Search> searchList) {
-        this.searchList = searchList;
+    public MovieAdapter(ArrayList<Movie> movieList) {
+        this.movieList = movieList;
     }
 
     @NonNull
@@ -30,17 +33,17 @@ class MovieAdapter extends RecyclerView.Adapter<MovieHolder> implements View.OnC
 
     @Override
     public void onBindViewHolder(@NonNull MovieHolder holder, int position) {
-        holder.bind(searchList.get(position));
+        holder.bind(movieList.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return searchList != null ? searchList.size() : 0;
+        return movieList != null ? movieList.size() : 0;
     }
 
 
-    public void insertItem(Search newMovie) {
-        searchList.add(newMovie);
+    public void insertItem(Movie newMovie) {
+        movieList.add(newMovie);
         notifyItemInserted(getItemCount());
     }
 
