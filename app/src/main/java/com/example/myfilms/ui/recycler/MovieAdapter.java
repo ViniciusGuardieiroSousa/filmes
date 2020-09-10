@@ -18,7 +18,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieHolder> implements V
     private final List<Movie> movieList;
     private View.OnClickListener listener;
 
-    public MovieAdapter(ArrayList<Movie> movieList) {
+    public MovieAdapter(List<Movie> movieList) {
         this.movieList = movieList;
     }
 

@@ -23,18 +23,19 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.myfilms.R;
-import com.example.myfilms.ui.domainModel.Movie;
-import com.example.myfilms.ui.domainModel.SearchList;
+import com.example.myfilms.exceptions.DatabaseException;
 import com.example.myfilms.repository.database.DatabaseFactory;
 import com.example.myfilms.repository.database.MovieDatabase;
-import com.example.myfilms.exceptions.DatabaseException;
 import com.example.myfilms.repository.retrofit.APIFactory;
 import com.example.myfilms.repository.retrofit.NetworkAPI;
 import com.example.myfilms.repository.retrofit.SearchFilmes;
+import com.example.myfilms.ui.domainModel.Movie;
+import com.example.myfilms.ui.domainModel.SearchList;
 import com.example.myfilms.ui.recycler.MovieAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import retrofit2.Call;
@@ -52,13 +53,11 @@ public class MainActivity extends AppCompatActivity {
     private Button searchButton;
     private EditText searchEditText;
     private RecyclerView recyclerView;
-    private ArrayList<Movie> moviesExisting = new ArrayList<>(0);
+    private List<Movie> moviesExisting = new ArrayList<>(0);
     private Context context;
     private MovieAdapter movieAdapter;
     private MovieDatabase database;
     private SearchFilmes searchFilmes;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
