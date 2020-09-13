@@ -31,7 +31,7 @@ import com.example.myfilms.mapper.Mapper;
 import com.example.myfilms.mapper.NetworkMovieToMovieMapper;
 import com.example.myfilms.repository.MovieRepository;
 import com.example.myfilms.repository.Repository;
-import com.example.myfilms.repository.database.DatabaseFactory;
+import com.example.myfilms.factory.DatabaseFactory;
 import com.example.myfilms.repository.dtos.NetworkMovie;
 import com.example.myfilms.repository.dtos.NetworkResult;
 import com.example.myfilms.repository.retrofit.MoviesAPI;
@@ -55,6 +55,16 @@ import static com.example.myfilms.constants.BundlesKeyConstants.TYPE_MOVIE_DESCR
 import static com.example.myfilms.constants.BundlesKeyConstants.YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static String NO_MOVIES_FOUNDED_MESSAGE_CONSTANTS = "Filmes não encontrados";
+    private static String DATABASE_NAME_CONSTANTS = "Movies";
+    private static String DATABASE_TAG_ERROR_CONSTANTS = "DatabaseError";
+    private static String ERROR_TO_ADD_MOVIES_ON_DATABASE_MESSAGE_CONSTANTS =
+            "Error to add a movie on a database";
+    private static String MOVIES_ALREADY_EXISTING_MESSAGE_CONSTANT = "Filme já existente";
+    private static String ONE_MOVIE_REGISTERED_EXISTING_MESSAGE_CONSTANT = "Filme cadastrado";
+    private static String MOVIES_REGISTERED_EXISTING_MESSAGE_CONSTANT = "Filmes cadastrados";
+    private static String SEARCH_ERROR_MESSAGE_CONSTANT = "Texto não pode ser vazio";
 
     private Button searchButton;
     private EditText searchEditText;
@@ -82,13 +92,13 @@ public class MainActivity extends AppCompatActivity {
             movieRepository = new MovieRepository(
                     DatabaseFactory.getMovieDataBase(
                             context,
-                            "Movies",
+                            DATABASE_NAME_CONSTANTS,
                             MODE_PRIVATE
                     )
             );
             this.moviesAPI = APIFactory.getMoviesAPI();
         } catch (Exception exception) {
-            Log.e("DatabaseError", Objects.requireNonNull(exception.getMessage()));
+            Log.e(DATABASE_TAG_ERROR_CONSTANTS, Objects.requireNonNull(exception.getMessage()));
         }
 
     }
@@ -107,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 ((InputMethodManager) Objects.requireNonNull(context.getSystemService(Context.INPUT_METHOD_SERVICE))).hideSoftInputFromWindow(
                         searchButton.getWindowToken(), 0);
                 if (typedText.isEmpty())
-                    Toast.makeText(getApplicationContext(), "Texto não pode ser vazio", Toast.LENGTH_LONG).show();
+                    showToastMessage(SEARCH_ERROR_MESSAGE_CONSTANT);
                 else {
                     searchMovies(typedText);
                 }
@@ -119,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             moviesExisting = movieRepository.getSavedItems();
         } catch (DatabaseException exception) {
-            Log.e("DatabaseError", Objects.requireNonNull(exception.getMessage()));
+            Log.e(DATABASE_TAG_ERROR_CONSTANTS, Objects.requireNonNull(exception.getMessage()));
         }
     }
 
@@ -212,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void noMoviesFounded() {
-        showToastMessage("No movies founded");
+        showToastMessage(NO_MOVIES_FOUNDED_MESSAGE_CONSTANTS);
     }
 
     private void addMoviesOnMoviesExisting(List<Movie> moviesResult) {
@@ -238,11 +248,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void displayMessageWhenMoviesWasAdded(int numberOfMoviesAdded) {
         if (noMoviesAdded(numberOfMoviesAdded))
-            showToastMessage("Filme já existente");
+            showToastMessage(MOVIES_ALREADY_EXISTING_MESSAGE_CONSTANT);
         else if (oneMovieAdded(numberOfMoviesAdded))
-            showToastMessage("Filme cadastrado");
+            showToastMessage(ONE_MOVIE_REGISTERED_EXISTING_MESSAGE_CONSTANT);
         else
-            showToastMessage("Filmes cadastrados");
+            showToastMessage(MOVIES_REGISTERED_EXISTING_MESSAGE_CONSTANT);
     }
 
     private Boolean noMoviesAdded(int numberOfMoviesAdded) {
@@ -292,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             movieRepository.insertItem(movie);
         } catch (DatabaseException exception) {
-            Log.e("DatabaseError", "Error to add a movie on a database");
+            Log.e(DATABASE_TAG_ERROR_CONSTANTS,ERROR_TO_ADD_MOVIES_ON_DATABASE_MESSAGE_CONSTANTS);
         }
     }
 }

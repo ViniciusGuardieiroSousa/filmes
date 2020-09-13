@@ -5,7 +5,7 @@ import android.util.Base64;
 import com.example.myfilms.repository.dtos.DBMovie;
 import com.example.myfilms.ui.domainModel.Movie;
 
-public class DBMovieToMovieMapper implements Mapper <DBMovie, Movie> {
+public class DBMovieToMovieMapper implements Mapper<DBMovie, Movie> {
     @Override
     public Movie map(DBMovie dbMovie) {
         Movie movieMapped = new Movie();

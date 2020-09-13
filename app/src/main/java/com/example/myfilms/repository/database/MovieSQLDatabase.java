@@ -20,7 +20,7 @@ import static com.example.myfilms.repository.database.MovieTableConstants.COLUMN
 
 public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
 
-    MovieSQLDatabase(
+    public MovieSQLDatabase(
             Context context,
             String sqlName,
             int tableMode
@@ -91,13 +91,6 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
             executeCommand(MovieSQLCommands.getInsertCommand(movie));
         } catch (SQLException exception) {
             throw new DatabaseException(exception.getMessage());
-        }
-    }
-
-    @Override
-    public void insertMovies(List<DBMovie> movies) throws DatabaseException {
-        for (DBMovie movie : movies) {
-            insertMovie(movie);
         }
     }
 }

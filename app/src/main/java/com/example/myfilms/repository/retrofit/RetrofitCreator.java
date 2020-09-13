@@ -5,7 +5,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitCreator implements NetworkAPI {
     private static Retrofit retrofit;
-    public RetrofitCreator(){
+
+    public RetrofitCreator() {
         retrofit = new Retrofit
                 .Builder()
                 .baseUrl(APIConstants.BASE_URL)

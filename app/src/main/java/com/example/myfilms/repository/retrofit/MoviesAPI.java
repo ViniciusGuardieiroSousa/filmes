@@ -10,5 +10,5 @@ import retrofit2.http.Query;
 public interface MoviesAPI {
 
     @GET("?apikey=b1005863&type=movie&")
-    Call<NetworkResult>getSearch(@Query("s") String movieName);
+    Call<NetworkResult> getSearch(@Query("s") String movieName);
 }
