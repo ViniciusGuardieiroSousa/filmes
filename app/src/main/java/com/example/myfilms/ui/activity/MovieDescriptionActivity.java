@@ -20,7 +20,7 @@ public class MovieDescriptionActivity extends AppCompatActivity {
     private TextView movieTitle, movieYear, movieType;
     private ImageView moviePoster;
     private Bundle extras;
-    //image is not displaying
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,11 +51,7 @@ public class MovieDescriptionActivity extends AppCompatActivity {
         setTextWithBundleInformation(movieTitle, TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY);
         setTextWithBundleInformation(movieYear, YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY);
         setTextWithBundleInformation(movieType, TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY);
-        setImageWithBundleInformation(
-                moviePoster,
-                IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY,
-                IMAGE_OFFSET
-        );
+        setImageWithBundleInformation();
 
     }
 
@@ -65,12 +61,12 @@ public class MovieDescriptionActivity extends AppCompatActivity {
             textView.setText(extra);
     }
 
-    private void setImageWithBundleInformation(ImageView imageView, String key, int imageOffset) {
-        byte[] imageByteArray = extras.getByteArray(key);
+    private void setImageWithBundleInformation() {
+        byte[] imageByteArray = extras.getByteArray(IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY);
         if(imageByteArray != null){
             Bitmap imageDecoded = BitmapFactory
-                    .decodeByteArray(imageByteArray, imageOffset, imageByteArray.length);
-            imageView.setImageBitmap(imageDecoded);
+                    .decodeByteArray(imageByteArray, IMAGE_OFFSET, imageByteArray.length);
+            moviePoster.setImageBitmap(imageDecoded);
         }
     }
 

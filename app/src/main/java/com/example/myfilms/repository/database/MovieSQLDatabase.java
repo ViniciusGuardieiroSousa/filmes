@@ -4,44 +4,21 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 
-import com.example.myfilms.mapper.DBMovieToMovieMapper;
-import com.example.myfilms.mapper.ListMapper;
-import com.example.myfilms.mapper.ListMapperImpl;
-import com.example.myfilms.mapper.Mapper;
-import com.example.myfilms.mapper.MovieToDBMovie;
-import com.example.myfilms.repository.dtos.DBMovie;
 import com.example.myfilms.exceptions.DatabaseException;
-import com.example.myfilms.ui.domainModel.Movie;
+import com.example.myfilms.repository.dtos.DBMovie;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.myfilms.constants.MovieTableConstants.COLUMN_IMDB_ID;
-import static com.example.myfilms.constants.MovieTableConstants.COLUMN_POSTER;
-import static com.example.myfilms.constants.MovieTableConstants.COLUMN_TITLE;
-import static com.example.myfilms.constants.MovieTableConstants.COLUMN_TYPE;
-import static com.example.myfilms.constants.MovieTableConstants.COLUMN_YEAR;
-import static com.example.myfilms.constants.MovieTableConstants.TABLE_NAME;
-import static com.example.myfilms.constants.MovieTableConstants.TABLE_ID;
+import static com.example.myfilms.repository.database.MovieTableConstants.COLUMN_IMDB_ID;
+import static com.example.myfilms.repository.database.MovieTableConstants.COLUMN_POSTER;
+import static com.example.myfilms.repository.database.MovieTableConstants.COLUMN_TITLE;
+import static com.example.myfilms.repository.database.MovieTableConstants.COLUMN_TYPE;
+import static com.example.myfilms.repository.database.MovieTableConstants.COLUMN_YEAR;
 
 public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
-
-    private static String CREATE_TABLE_MOVIE_SQL_COMMAND =
-            "CREATE TABLE IF NOT EXISTS '" + TABLE_NAME + "'('"
-                    + TABLE_ID + "' INTEGER  PRIMARY KEY AUTOINCREMENT ,'"
-                    + COLUMN_TITLE + "' VARCHAR, '"
-                    + COLUMN_YEAR + "' VARCHAR, '"
-                    + COLUMN_IMDB_ID + "' VARCHAR, '"
-                    + COLUMN_TYPE + "' VARCHAR, '"
-                    + COLUMN_POSTER + "' VARCHAR" + " )";
-
-    private static String GET_MOVIES_ON_TABLE = "SELECT * FROM " + TABLE_NAME;
-    private ListMapper<DBMovie, Movie> dbMovieListMapperToMovieList;
-    private Mapper<DBMovie, Movie> dbMovieMapperToMovie = new DBMovieToMovieMapper();
-    private Mapper<Movie, DBMovie> movieMapperToDBMovie = new MovieToDBMovie();
-
 
     MovieSQLDatabase(
             Context context,
@@ -50,20 +27,17 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
     ) throws DatabaseException {
         super(context, sqlName, tableMode);
         try {
-            createTable(CREATE_TABLE_MOVIE_SQL_COMMAND);
+            createTable(MovieSQLCommands.CREATE_TABLE_MOVIE_SQL_COMMAND);
         } catch (SQLException exception) {
             throw new DatabaseException(exception.getMessage());
         }
-        dbMovieListMapperToMovieList = new ListMapperImpl<>(dbMovieMapperToMovie);
     }
 
     @Override
-    public List<Movie> getMovies() throws DatabaseException {
+    public List<DBMovie> getMovies() throws DatabaseException {
         try {
-            Cursor cursor = database.rawQuery(GET_MOVIES_ON_TABLE, null);
-            List<DBMovie> moviesSaved = getMoviesFromCursor(cursor);
-            List<Movie> listMovieMapped = dbMovieListMapperToMovieList.map(moviesSaved);
-            return listMovieMapped;
+            Cursor cursor = database.rawQuery(MovieSQLCommands.GET_MOVIES_ON_TABLE, null);
+            return getMoviesFromCursor(cursor);
         } catch (SQLException exception) {
             throw new DatabaseException(exception.getMessage());
         }
@@ -82,7 +56,6 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
         }
         return moviesSaved;
     }
-
 
     private DBMovie getMovieFromCursor(
             Cursor cursor
@@ -113,53 +86,18 @@ public class MovieSQLDatabase extends SQLDatabase implements MovieDatabase {
     }
 
     @Override
-    public void insertMovie(Movie movie) throws DatabaseException {
+    public void insertMovie(DBMovie movie) throws DatabaseException {
         try {
-            DBMovie dbMovie = movieMapperToDBMovie.map(movie);
-            executeCommand(getInsertCommand(dbMovie));
+            executeCommand(MovieSQLCommands.getInsertCommand(movie));
         } catch (SQLException exception) {
             throw new DatabaseException(exception.getMessage());
         }
     }
 
     @Override
-    public void insertMovies(List<Movie> movies) throws DatabaseException {
-        for (Movie movie : movies) {
+    public void insertMovies(List<DBMovie> movies) throws DatabaseException {
+        for (DBMovie movie : movies) {
             insertMovie(movie);
         }
-    }
-
-    private String getInsertCommand(DBMovie movie) {
-        String titleNormalized = threatApostrophe(movie.getTitle());
-        return "INSERT INTO " + TABLE_NAME + "("
-                + COLUMN_TITLE + ", "
-                + COLUMN_YEAR + ", "
-                + COLUMN_IMDB_ID + ", "
-                + COLUMN_TYPE + ","
-                + COLUMN_POSTER
-                + ") VALUES('"
-                + titleNormalized + "','"
-                + movie.getYear() + "','"
-                + movie.getImdbID() + "','"
-                + movie.getType() + "','"
-                + movie.getImage() + "'" +
-                ")";
-    }
-
-    private String threatApostrophe(String text) {
-        StringBuilder result = new StringBuilder();
-        int textSize = text.length();
-        for (int i = 0; i < textSize; i++) {
-            char character = text.charAt(i);
-            if (isApostrophe(character)) {
-                result.append("'");
-            }
-            result.append(character);
-        }
-        return result.toString();
-    }
-
-    private boolean isApostrophe(char character) {
-        return character == '\'';
     }
 }

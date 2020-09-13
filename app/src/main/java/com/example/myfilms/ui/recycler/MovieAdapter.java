@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myfilms.R;
 import com.example.myfilms.ui.domainModel.Movie;
 
-import java.util.ArrayList;
 import java.util.List;
 
 

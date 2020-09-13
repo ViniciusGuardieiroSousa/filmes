@@ -6,5 +6,4 @@ public final class BundlesKeyConstants {
     public static final String YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY = "YEAR";
     public static final String IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY = "IMAGE";
     public static final String TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY = "TYPE";
-
 }

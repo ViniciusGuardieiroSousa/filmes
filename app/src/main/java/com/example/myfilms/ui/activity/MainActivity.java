@@ -24,13 +24,18 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.myfilms.R;
 import com.example.myfilms.exceptions.DatabaseException;
+import com.example.myfilms.factory.APIFactory;
+import com.example.myfilms.mapper.ListMapper;
+import com.example.myfilms.mapper.ListMapperImpl;
+import com.example.myfilms.mapper.Mapper;
+import com.example.myfilms.mapper.NetworkMovieToMovieMapper;
+import com.example.myfilms.repository.MovieRepository;
+import com.example.myfilms.repository.Repository;
 import com.example.myfilms.repository.database.DatabaseFactory;
-import com.example.myfilms.repository.database.MovieDatabase;
-import com.example.myfilms.repository.retrofit.APIFactory;
-import com.example.myfilms.repository.retrofit.NetworkAPI;
-import com.example.myfilms.repository.retrofit.SearchFilmes;
+import com.example.myfilms.repository.dtos.NetworkMovie;
+import com.example.myfilms.repository.dtos.NetworkResult;
+import com.example.myfilms.repository.retrofit.MoviesAPI;
 import com.example.myfilms.ui.domainModel.Movie;
-import com.example.myfilms.ui.domainModel.SearchList;
 import com.example.myfilms.ui.recycler.MovieAdapter;
 
 import java.io.ByteArrayOutputStream;
@@ -42,22 +47,23 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.myfilms.constants.BundlesKeyConstants.IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
-import static com.example.myfilms.constants.BundlesKeyConstants.TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static
+        com.example.myfilms.constants.BundlesKeyConstants.IMAGE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static
+        com.example.myfilms.constants.BundlesKeyConstants.TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 import static com.example.myfilms.constants.BundlesKeyConstants.TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 import static com.example.myfilms.constants.BundlesKeyConstants.YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "erro";
     private Button searchButton;
     private EditText searchEditText;
     private RecyclerView recyclerView;
     private List<Movie> moviesExisting = new ArrayList<>(0);
     private Context context;
     private MovieAdapter movieAdapter;
-    private MovieDatabase database;
-    private SearchFilmes searchFilmes;
+    private Repository<Movie> movieRepository;
+    private MoviesAPI moviesAPI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +71,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         context = getApplicationContext();
         findViewsById();
+        configRepository();
         configSearchButtonListener();
-        configDatabaseAndGetMoviesSaved();
-        configNetworkAPI();
+        getSavedMovies();
         configRecycleView();
+    }
+
+    private void configRepository() {
+        try {
+            movieRepository = new MovieRepository(
+                    DatabaseFactory.getMovieDataBase(
+                            context,
+                            "Movies",
+                            MODE_PRIVATE
+                    )
+            );
+            this.moviesAPI = APIFactory.getMoviesAPI();
+        } catch (Exception exception) {
+            Log.e("DatabaseError", Objects.requireNonNull(exception.getMessage()));
+        }
+
     }
 
     private void findViewsById() {
@@ -77,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewBuscaID);
     }
 
-    private void configSearchButtonListener(){
+    private void configSearchButtonListener() {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,20 +115,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
-
-    private void configDatabaseAndGetMoviesSaved() {
+    private void getSavedMovies() {
         try {
-            database = DatabaseFactory.getMovieDataBase(this, "Movies", MODE_PRIVATE);
-            moviesExisting = database.getMovies();
+            moviesExisting = movieRepository.getSavedItems();
         } catch (DatabaseException exception) {
             Log.e("DatabaseError", Objects.requireNonNull(exception.getMessage()));
         }
-    }
-
-    private void configNetworkAPI(){
-        NetworkAPI networkAPI = APIFactory.getAPI();
-        searchFilmes = networkAPI.getSearchMovies();
     }
 
     private void configRecycleView() {
@@ -130,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private Intent createDescriptionIntent(Movie movie){
+    private Intent createDescriptionIntent(Movie movie) {
         Intent intent = new Intent(
                 MainActivity.this, MovieDescriptionActivity.class
         );
@@ -153,45 +167,63 @@ public class MainActivity extends AppCompatActivity {
         return intent;
     }
 
-    //improve
     private void searchMovies(String text) {
-        Call<SearchList> moviesSearched = searchFilmes.getSearch(text);
-        moviesSearched.enqueue(new Callback<SearchList>() {
+        Call<NetworkResult> moviesSearched = moviesAPI.getSearch(text);
+        moviesSearched.enqueue(new Callback<NetworkResult>() {
             @Override
-            public void onResponse(Call<SearchList> call, Response<SearchList> response) {
-                if (!response.isSuccessful()) {
-                    Log.e(TAG, "erro: " + response.code());
-                } else {
-                    SearchList searchList;
-                    searchList = response.body();
-                    if (haveMovies(searchList)) {
-                        treatResponseToAddOnMoviesExisting(searchList);
-
-                    } else {
-                        showToastMessage("Filme não encontrado");
-                    }
-                }
+            public void onResponse(Call<NetworkResult> call, Response<NetworkResult> response) {
+                treatRetrofitResponse(response);
             }
 
             @Override
-            public void onFailure(Call<SearchList> call, Throwable t) {
-                Log.e(TAG, "erro: " + t.getMessage());
+            public void onFailure(Call<NetworkResult> call, Throwable t) {
+                noMoviesFounded();
             }
         });
     }
 
-    private Boolean haveMovies(SearchList searchList){
-        return searchList != null && searchList.filmes != null;
+    private void treatRetrofitResponse(Response<NetworkResult> response){
+        if (response.isSuccessful()) {
+            NetworkResult networkResult = response.body();
+            treatNetworkResult(networkResult);
+        }
+        else{
+            noMoviesFounded();
+        }
     }
 
-    private void treatResponseToAddOnMoviesExisting(SearchList searchList){
-        int numberOfMoviesAdded = addDifferentMoviesOnMoviesExisting(searchList);
+    private void treatNetworkResult(NetworkResult networkResult){
+        if (networkResultHaveMovies(networkResult)) {
+            List<Movie> result = convertNetworkMoviesOnMovies(networkResult.movies);
+            addMoviesOnMoviesExisting(result);
+        } else {
+            noMoviesFounded();
+        }
+    }
+
+    private boolean networkResultHaveMovies(NetworkResult networkResult) {
+        return networkResult != null && networkResult.movies != null;
+    }
+
+    private List<Movie> convertNetworkMoviesOnMovies(List<NetworkMovie> networkMovies){
+        Mapper<NetworkMovie, Movie> networkMovieToMovieMapper = new NetworkMovieToMovieMapper();
+        ListMapper<NetworkMovie, Movie> networkMovieListToMovieListMapper = new ListMapperImpl<>(networkMovieToMovieMapper);
+        return networkMovieListToMovieListMapper.map(networkMovies);
+    }
+
+    private void noMoviesFounded() {
+        showToastMessage("No movies founded");
+    }
+
+    private void addMoviesOnMoviesExisting(List<Movie> moviesResult) {
+        int numberOfMoviesAdded = addDifferentMoviesOnMoviesExisting(moviesResult);
         displayMessageWhenMoviesWasAdded(numberOfMoviesAdded);
     }
-    
-    private int addDifferentMoviesOnMoviesExisting(SearchList searchList){
+
+
+    private int addDifferentMoviesOnMoviesExisting(List<Movie> moviesResult) {
         int numberOfMoviesAdded = 0;
-        for (Movie movie : searchList.filmes) {
+        for (Movie movie : moviesResult) {
             if (movieIsntOnMoviesExistingVariable(movie)) {
                 downloadImage(movie);
                 numberOfMoviesAdded++;
@@ -199,12 +231,12 @@ public class MainActivity extends AppCompatActivity {
         }
         return numberOfMoviesAdded;
     }
-    
-    private Boolean movieIsntOnMoviesExistingVariable(Movie movie){
+
+    private Boolean movieIsntOnMoviesExistingVariable(Movie movie) {
         return moviesExisting.size() == 0 || !moviesExisting.contains(movie);
     }
 
-    private void displayMessageWhenMoviesWasAdded(int numberOfMoviesAdded){
+    private void displayMessageWhenMoviesWasAdded(int numberOfMoviesAdded) {
         if (noMoviesAdded(numberOfMoviesAdded))
             showToastMessage("Filme já existente");
         else if (oneMovieAdded(numberOfMoviesAdded))
@@ -213,15 +245,15 @@ public class MainActivity extends AppCompatActivity {
             showToastMessage("Filmes cadastrados");
     }
 
-    private Boolean noMoviesAdded(int numberOfMoviesAdded){
+    private Boolean noMoviesAdded(int numberOfMoviesAdded) {
         return numberOfMoviesAdded == 0;
     }
-    
-    private Boolean oneMovieAdded(int numberOfMoviesAdded){
+
+    private Boolean oneMovieAdded(int numberOfMoviesAdded) {
         return numberOfMoviesAdded == 1;
     }
 
-    private void showToastMessage(String message){
+    private void showToastMessage(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
 
@@ -245,24 +277,22 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private byte[] compressImageFromBitmap(Bitmap image){
+    private byte[] compressImageFromBitmap(Bitmap image) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return stream.toByteArray();
     }
 
-    private void configMovieOnDatabaseAndAdapter(Movie movie){
+    private void configMovieOnDatabaseAndAdapter(Movie movie) {
         movieAdapter.insertItem(movie);
         saveMovieOnDatabase(movie);
     }
 
-    private void saveMovieOnDatabase(Movie movie){
+    private void saveMovieOnDatabase(Movie movie) {
         try {
-            database.insertMovie(movie);
+            movieRepository.insertItem(movie);
         } catch (DatabaseException exception) {
             Log.e("DatabaseError", "Error to add a movie on a database");
         }
     }
-
-
 }

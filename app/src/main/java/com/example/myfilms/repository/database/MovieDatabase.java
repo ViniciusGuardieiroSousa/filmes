@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface MovieDatabase {
 
-    public List<Movie> getMovies() throws DatabaseException;
-    public void insertMovie(Movie movie) throws DatabaseException;
-    public void insertMovies(List<Movie> movies) throws DatabaseException;
+    public List<DBMovie> getMovies() throws DatabaseException;
+    public void insertMovie(DBMovie movie) throws DatabaseException;
+    public void insertMovies(List<DBMovie> movies) throws DatabaseException;
 
 }

@@ -1,4 +1,4 @@
-package com.example.myfilms.constants;
+package com.example.myfilms.repository.database;
 
 public final class MovieTableConstants {
 

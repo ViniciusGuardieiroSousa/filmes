@@ -1,7 +1,5 @@
 package com.example.myfilms.repository.retrofit;
 
-import com.example.myfilms.constants.APIConstants;
-
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -16,7 +14,7 @@ public class RetrofitCreator implements NetworkAPI {
     }
 
     @Override
-    public SearchFilmes getSearchMovies() {
-        return retrofit.create(SearchFilmes.class);
+    public MoviesAPI getMoviesAPI() {
+        return retrofit.create(MoviesAPI.class);
     }
 }
