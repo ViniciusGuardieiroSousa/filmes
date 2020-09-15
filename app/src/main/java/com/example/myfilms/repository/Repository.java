@@ -10,4 +10,6 @@ public interface Repository <T> {
 
     List<T> getSavedItems() throws DatabaseException;
 
+    void searchItem(String itemName);
+
 }
