@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="#808080"
 
-    tools:context=".ui.activity.MainActivity">
+    tools:context=".feature.movies.presentation.activity.MainActivity">
 
     <ScrollView
         android:layout_width="match_parent"
