@@ -10,16 +10,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myfilms.R;
 import com.example.myfilms.feature.movies.domain.entity.Movie;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieHolder> implements View.OnClickListener {
-    private final List<Movie> movieList;
+    private final List<Movie> movieList = new ArrayList<>();
     private View.OnClickListener listener;
-
-    public MovieAdapter(List<Movie> movieList) {
-        this.movieList = movieList;
-    }
 
     @NonNull
     public MovieHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -44,6 +41,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieHolder> implements V
     public void insertItem(Movie newMovie) {
         movieList.add(newMovie);
         notifyItemInserted(getItemCount());
+    }
+
+    public void insertItems(List<Movie> movies) {
+        movieList.addAll(movies);
+        notifyItemRangeChanged(getItemCount(), movies.size());
     }
 
     public void setOnClickListener(View.OnClickListener listener) {

@@ -55,6 +55,7 @@ public class Movie {
     public void setPoster(String poster) {
         Poster = poster;
     }
+
     @Override
     public boolean equals(Object obj){
         if(!(obj instanceof Movie)){
