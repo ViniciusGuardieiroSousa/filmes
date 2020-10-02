@@ -3,7 +3,6 @@ package com.example.myfilms.feature.movies.data;
 import com.example.myfilms.core.repository.DataSource;
 import com.example.myfilms.core.repository.EnqueueListener;
 import com.example.myfilms.core.repository.Repository;
-import com.example.myfilms.feature.movies.exceptions.DatabaseException;
 import com.example.myfilms.feature.movies.domain.entity.Movie;
 
 import java.util.List;

@@ -38,14 +38,14 @@ import static com.example.myfilms.feature.movies.presentation.constants.BundlesK
 import static com.example.myfilms.feature.movies.presentation.constants.BundlesKeyConstants.TITLE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 import static com.example.myfilms.feature.movies.presentation.constants.BundlesKeyConstants.TYPE_MOVIE_DESCRIPTION_ACTIVITY_KEY;
 import static com.example.myfilms.feature.movies.presentation.constants.BundlesKeyConstants.YEAR_MOVIE_DESCRIPTION_ACTIVITY_KEY;
+import static com.example.myfilms.feature.movies.presentation.constants.LogTagsConstants.DATABASE_TAG_ERROR_CONSTANTS;
+import static com.example.myfilms.feature.movies.presentation.constants.LogTagsConstants.SEARCH_TAG_ERROR;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static String SEARCH_TAG_ERROR = "SearchError";
+
     private static String NO_MOVIES_FOUNDED_MESSAGE_CONSTANTS = "Filmes não encontrados";
-    private static String DATABASE_TAG_ERROR_CONSTANTS = "DatabaseError";
-    private static String ERROR_TO_ADD_MOVIES_ON_DATABASE_MESSAGE_CONSTANTS =
-            "Error to add a movie on a database";
+
     private static String MOVIES_ALREADY_EXISTING_MESSAGE_CONSTANT = "Filme já existente";
     private static String ONE_MOVIE_REGISTERED_EXISTING_MESSAGE_CONSTANT = "Filme cadastrado";
     private static String MOVIES_REGISTERED_EXISTING_MESSAGE_CONSTANT = "Filmes cadastrados";
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getMoviesLiveData().observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(List<Movie> movies) {
-                moviesExisting = movies;
+                moviesExisting.addAll(movies);
                 movieAdapter.insertItems(movies);
             }
         });
@@ -190,9 +190,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(List<Movie> movies) {
                 if(moviesIsNotNull(movies)){
-                    addMoviesOnMoviesExisting(movies);
+                    displayMessageWhenMoviesWasAdded(movies.size());
+                    showSearchedMovies(movies);
                 } else {
-                    noMoviesFounded();
+                    moviesAlreadyInserted();
                 }
             }
         });
@@ -202,45 +203,31 @@ public class MainActivity extends AppCompatActivity {
         return movies!=null;
     }
 
-    private void noMoviesFounded() {
-        showToastMessage(NO_MOVIES_FOUNDED_MESSAGE_CONSTANTS);
+    private void moviesAlreadyInserted() {
+        showToastMessage(MOVIES_ALREADY_EXISTING_MESSAGE_CONSTANT);
     }
 
-    private void addMoviesOnMoviesExisting(List<Movie> moviesResult) {
-        int numberOfMoviesAdded = addDifferentMoviesOnMoviesExisting(moviesResult);
-        displayMessageWhenMoviesWasAdded(numberOfMoviesAdded);
-    }
-
-    private int addDifferentMoviesOnMoviesExisting(List<Movie> moviesResult) {
-        int numberOfMoviesAdded = 0;
-        for (Movie movie : moviesResult) {
-            if (movieIsNotOnMoviesExistingVariable(movie)) {
-                downloadImage(movie);
-                numberOfMoviesAdded++;
-            }
-        }
-        return numberOfMoviesAdded;
-    }
-
-    private Boolean movieIsNotOnMoviesExistingVariable(Movie movie) {
-        return moviesExisting.size() == 0 || !moviesExisting.contains(movie);
-    }
-
-    private void displayMessageWhenMoviesWasAdded(int numberOfMoviesAdded) {
-        if (noMoviesAdded(numberOfMoviesAdded))
-            showToastMessage(MOVIES_ALREADY_EXISTING_MESSAGE_CONSTANT);
-        else if (oneMovieAdded(numberOfMoviesAdded))
+    private void displayMessageWhenMoviesWasAdded(int numberOfMoviesFounded) {
+        if (noMoviesFounded(numberOfMoviesFounded))
+            showToastMessage(NO_MOVIES_FOUNDED_MESSAGE_CONSTANTS);
+        else if (oneMovieFounded(numberOfMoviesFounded))
             showToastMessage(ONE_MOVIE_REGISTERED_EXISTING_MESSAGE_CONSTANT);
         else
             showToastMessage(MOVIES_REGISTERED_EXISTING_MESSAGE_CONSTANT);
     }
 
-    private Boolean noMoviesAdded(int numberOfMoviesAdded) {
+    private Boolean noMoviesFounded(int numberOfMoviesAdded) {
         return numberOfMoviesAdded == 0;
     }
 
-    private Boolean oneMovieAdded(int numberOfMoviesAdded) {
+    private Boolean oneMovieFounded(int numberOfMoviesAdded) {
         return numberOfMoviesAdded == 1;
+    }
+
+    private void showSearchedMovies(List<Movie> movies){
+        for(Movie movie : movies){
+            downloadImage(movie);
+        }
     }
 
     private void downloadImage(final Movie movie) {
@@ -254,7 +241,8 @@ public class MainActivity extends AppCompatActivity {
                             @Nullable Transition<? super Bitmap> transition
                     ) {
                         movie.setImage(compressImageFromBitmap(resource));
-                        configMovieOnDatabaseAndAdapter(movie);
+                        movieAdapter.insertItem(movie);
+                        moviesExisting.add(movie);
                     }
 
                     @Override
@@ -267,20 +255,6 @@ public class MainActivity extends AppCompatActivity {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return stream.toByteArray();
-    }
-
-    private void configMovieOnDatabaseAndAdapter(Movie movie) {
-        movieAdapter.insertItem(movie);
-        moviesExisting.add(movie);
-        saveMovieOnDatabase(movie);
-    }
-
-    private void saveMovieOnDatabase(Movie movie) {
-        try {
-            viewModel.insertMovie(movie);
-        } catch (Exception exception) {
-            Log.e(DATABASE_TAG_ERROR_CONSTANTS,ERROR_TO_ADD_MOVIES_ON_DATABASE_MESSAGE_CONSTANTS);
-        }
     }
 
     private void showToastMessage(String message) {

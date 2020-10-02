@@ -1,20 +1,20 @@
 package com.example.myfilms.feature.movies.data;
 
-import com.example.myfilms.core.repository.DataSource;
-import com.example.myfilms.core.repository.EnqueueListener;
-import com.example.myfilms.feature.movies.exceptions.DatabaseException;
-import com.example.myfilms.feature.movies.data.mapper.DBMovieToMovieMapper;
 import com.example.myfilms.core.mapper.ListMapper;
 import com.example.myfilms.core.mapper.ListMapperImpl;
 import com.example.myfilms.core.mapper.Mapper;
-import com.example.myfilms.feature.movies.data.mapper.MovieToDBMovieMapper;
-import com.example.myfilms.feature.movies.data.mapper.NetworkMovieToMovieMapper;
+import com.example.myfilms.core.repository.DataSource;
+import com.example.myfilms.core.repository.EnqueueListener;
 import com.example.myfilms.feature.movies.data.database.MovieDatabase;
 import com.example.myfilms.feature.movies.data.dtos.DBMovie;
 import com.example.myfilms.feature.movies.data.dtos.NetworkMovie;
 import com.example.myfilms.feature.movies.data.dtos.NetworkResult;
+import com.example.myfilms.feature.movies.data.mapper.DBMovieToMovieMapper;
+import com.example.myfilms.feature.movies.data.mapper.MovieToDBMovieMapper;
+import com.example.myfilms.feature.movies.data.mapper.NetworkMovieToMovieMapper;
 import com.example.myfilms.feature.movies.data.retrofit.MoviesAPI;
 import com.example.myfilms.feature.movies.domain.entity.Movie;
+import com.example.myfilms.feature.movies.exceptions.DatabaseException;
 
 import java.util.List;
 
