@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#808080"
 
-    tools:context=".CadastroActivity">
+    tools:context=".ui.activity.MainActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -24,16 +24,12 @@
             <TextView
                 android:id="@+id/textCadastroID"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="wrap_content"                
                 android:fontFamily="sans-serif-black"
-
+                
                 android:text="@string/cadastro"
                 android:textColor="@color/preto"
                 android:textSize="40sp" />
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/imagemID"/>
             <EditText
                 android:id="@+id/editTextBuscaID"
                 android:layout_width="314dp"
@@ -56,9 +52,9 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewBuscaID"
                 android:layout_width="385dp"
+
                 android:layout_height="457dp"
                 android:layout_marginBottom="16dp"
-                tools:listitem="@layout/activity_lista_itens"
                  />
 
 

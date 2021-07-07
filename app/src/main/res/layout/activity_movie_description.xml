@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DescricaoActivity"
+    tools:context=".ui.activity.MovieDescriptionActivity"
     android:orientation="vertical"
 
     android:background="#808080">
 
     <TextView
-        android:id="@+id/tituloID"
+        android:id="@+id/movieTitleDescriptionActivityID"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="40sp"
@@ -23,7 +22,7 @@
         android:gravity="center"
         tools:ignore="UseCompoundDrawables">
     <ImageView
-        android:id="@+id/imagemExibirId"
+        android:id="@+id/moviePosterImageDescriptionActivityId"
         android:layout_width="800px"
 
         android:layout_height="800px"/>
@@ -32,13 +31,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
     <TextView
-        android:id="@+id/anoID"
+        android:id="@+id/movieYearDescriptionActivityId"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:text="TextView" />
         <TextView
-            android:id="@+id/tipoID"
+            android:id="@+id/movieTypeDescriptionActivityId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="20sp"
